@@ -11,9 +11,9 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		C49694952F218C470064B8EF /* HeartBridge */ = {
+		C49694AA2F219DF60064B8EF /* New Folder */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = HeartBridge;
+			path = "New Folder";
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -32,7 +32,7 @@
 		C496948A2F218C470064B8EF = {
 			isa = PBXGroup;
 			children = (
-				C49694952F218C470064B8EF /* HeartBridge */,
+				C49694A12F219B720064B8EF /* New Group */,
 				C49694942F218C470064B8EF /* Products */,
 			);
 			sourceTree = "<group>";
@@ -43,6 +43,14 @@
 				C49694932F218C470064B8EF /* HeartBridge.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		C49694A12F219B720064B8EF /* New Group */ = {
+			isa = PBXGroup;
+			children = (
+				C49694AA2F219DF60064B8EF /* New Folder */,
+			);
+			path = "New Group";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -61,7 +69,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				C49694952F218C470064B8EF /* HeartBridge */,
+				C49694AA2F219DF60064B8EF /* New Folder */,
 			);
 			name = HeartBridge;
 			packageProductDependencies = (
@@ -274,7 +282,7 @@
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -318,7 +326,7 @@
 				REGISTER_APP_GROUPS = YES;
 				SDKROOT = auto;
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx xros xrsimulator";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
 				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
 				SWIFT_EMIT_LOC_STRINGS = YES;
