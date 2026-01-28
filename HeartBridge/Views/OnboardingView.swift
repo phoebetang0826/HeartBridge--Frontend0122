@@ -7,6 +7,15 @@
 
 import SwiftUI
 
+private enum OnboardingTheme {
+    static let background = Color(.systemBackground)
+    static let secondaryBackground = Color(.secondarySystemBackground)
+    static let tertiaryBackground = Color(.tertiarySystemBackground)
+    static let separator = Color(.separator)
+    static let accent = Color.accentColor
+    static let shadow = Color(.separator)
+}
+
 struct OnboardingView: View {
     let onComplete: (ChildProfile) -> Void
     
@@ -15,6 +24,8 @@ struct OnboardingView: View {
     @State private var enteredCode: String = ""
     @State private var phone: String = ""
     @State private var profile: PartialChildProfile = PartialChildProfile()
+    @State private var isLoading: Bool = false
+    @State private var errorMessage: String? = nil
     
     @FocusState private var isInputFocused: Bool
     
@@ -24,7 +35,7 @@ struct OnboardingView: View {
     
     var body: some View {
         ZStack {
-            Color.white
+            OnboardingTheme.background
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -38,7 +49,7 @@ struct OnboardingView: View {
                                 .frame(width: 44, height: 44)
                                 .background(
                                     RoundedRectangle(cornerRadius: 16)
-                                        .fill(Color.primary.opacity(0.1))
+                                        .fill(OnboardingTheme.secondaryBackground)
                                 )
                         }
                         .buttonStyle(ScaleButtonStyle())
@@ -71,11 +82,11 @@ struct OnboardingView: View {
         GeometryReader { geometry in
             ZStack(alignment: .leading) {
                 RoundedRectangle(cornerRadius: 6)
-                    .fill(Color.gray.opacity(0.2))
+                    .fill(OnboardingTheme.secondaryBackground)
                     .frame(height: 6)
                 
                 RoundedRectangle(cornerRadius: 6)
-                    .fill(Color.primary)
+                    .fill(OnboardingTheme.accent)
                     .frame(width: geometry.size.width * CGFloat(step) / CGFloat(totalSteps), height: 6)
                     .animation(.easeOut(duration: 0.5), value: step)
             }
@@ -114,8 +125,8 @@ struct OnboardingView: View {
                         .frame(width: 176, height: 176)
                         .background(
                             RoundedRectangle(cornerRadius: 44)
-                                .fill(Color.white)
-                                .shadow(color: .black.opacity(0.1), radius: 20, x: 0, y: 10)
+                                .fill(OnboardingTheme.background)
+                                .shadow(color: OnboardingTheme.shadow, radius: 20, x: 0, y: 10)
                         )
                     
                     // Title
@@ -128,7 +139,7 @@ struct OnboardingView: View {
                     VStack(spacing: 0) {
                         Text("Predictive Support for Everyday Autism Care")
                             .font(.system(size: 28, weight: .black, design: .rounded))
-                            .foregroundColor(.primary.opacity(0.8))
+                        .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
                             .lineLimit(3)
                             .tracking(-0.5)
@@ -137,10 +148,10 @@ struct OnboardingView: View {
                     .padding(.vertical, 40)
                     .background(
                         RoundedRectangle(cornerRadius: 44)
-                            .fill(Color.primary.opacity(0.1))
+                            .fill(OnboardingTheme.secondaryBackground)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 44)
-                                    .stroke(Color.primary.opacity(0.2), lineWidth: 2)
+                                    .stroke(OnboardingTheme.separator, lineWidth: 2)
                             )
                     )
                     
@@ -172,7 +183,7 @@ struct OnboardingView: View {
             
             Text("Select your role to continue")
                 .font(.system(size: 10, weight: .black, design: .rounded))
-                .foregroundColor(.gray)
+                .foregroundColor(.secondary)
                 .textCase(.uppercase)
                 .tracking(4)
                 .padding(.bottom, 40)
@@ -191,23 +202,23 @@ struct OnboardingView: View {
                 
                 Text(title)
                     .font(.system(size: 14, weight: .black, design: .rounded))
-                    .foregroundColor(.primary.opacity(0.8))
+                    .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 24)
             .background(
                 RoundedRectangle(cornerRadius: 32)
-                    .fill(self.role == role ? Color.primary.opacity(0.1) : Color.white)
+                    .fill(self.role == role ? OnboardingTheme.secondaryBackground : OnboardingTheme.background)
                     .overlay(
                         RoundedRectangle(cornerRadius: 32)
                             .stroke(
-                                self.role == role ? Color.primary : Color.gray.opacity(0.3),
+                                self.role == role ? OnboardingTheme.accent : OnboardingTheme.separator,
                                 lineWidth: 4
                             )
                     )
                     .shadow(
-                        color: self.role == role ? Color.primary.opacity(0.3) : Color.clear,
+                        color: self.role == role ? OnboardingTheme.shadow : Color.clear,
                         radius: 20,
                         x: 0,
                         y: 10
@@ -277,21 +288,21 @@ struct OnboardingView: View {
                 
                 Text(mainTitle)
                     .font(.system(size: 36, weight: .black, design: .rounded))
-                    .foregroundColor(.primary.opacity(0.9))
+                    .foregroundColor(.primary)
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
                     .padding(.bottom, 64)
                 
                 TextField(placeholder, text: text)
                     .font(.system(size: 28, weight: .black, design: .rounded))
-                    .foregroundColor(.primary.opacity(0.9))
+                    .foregroundColor(.primary)
                     .multilineTextAlignment(.center)
                     .padding(.vertical, 24)
                     .background(
                         VStack {
                             Spacer()
                             Rectangle()
-                                .fill(Color.gray.opacity(0.3))
+                                .fill(OnboardingTheme.separator)
                                 .frame(height: 4)
                         }
                     )
@@ -310,6 +321,8 @@ struct OnboardingView: View {
                 isEnabled: isStepValid(),
                 action: onContinue
             )
+            
+            statusMessageView
         }
     }
     
@@ -326,7 +339,7 @@ struct OnboardingView: View {
                 
                 Text("Where can we send your code?")
                     .font(.system(size: 36, weight: .black, design: .rounded))
-                    .foregroundColor(.primary.opacity(0.9))
+                    .foregroundColor(.primary)
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
                     .padding(.bottom, 64)
@@ -334,7 +347,7 @@ struct OnboardingView: View {
                 HStack(spacing: 16) {
                     Text("+1")
                         .font(.system(size: 28, weight: .black, design: .rounded))
-                        .foregroundColor(.gray)
+                        .foregroundColor(.secondary)
                     
                     TextField("(555) 000-0000", text: Binding(
                         get: { formatPhoneNumber(phone) },
@@ -344,7 +357,7 @@ struct OnboardingView: View {
                         }
                     ))
                         .font(.system(size: 28, weight: .black, design: .rounded))
-                        .foregroundColor(.primary.opacity(0.9))
+                        .foregroundColor(.primary)
                         .keyboardType(.phonePad)
                         .multilineTextAlignment(.center)
                         .focused($isInputFocused)
@@ -359,7 +372,7 @@ struct OnboardingView: View {
                     VStack {
                         Spacer()
                         Rectangle()
-                            .fill(Color.gray.opacity(0.3))
+                            .fill(OnboardingTheme.separator)
                             .frame(height: 4)
                     }
                 )
@@ -371,8 +384,10 @@ struct OnboardingView: View {
             continueButton(
                 title: "Send verification code",
                 isEnabled: isStepValid(),
-                action: nextStep
+                action: handleSendCode
             )
+            
+            statusMessageView
         }
     }
     
@@ -390,7 +405,7 @@ struct OnboardingView: View {
                 VStack(spacing: 16) {
                     Text("Welcome to HeartBridge 💙")
                         .font(.system(size: 36, weight: .black, design: .rounded))
-                        .foregroundColor(.primary.opacity(0.9))
+                        .foregroundColor(.primary)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
                     
@@ -406,7 +421,7 @@ struct OnboardingView: View {
                             VStack {
                                 Spacer()
                                 Rectangle()
-                                    .fill(Color.gray.opacity(0.3))
+                                    .fill(OnboardingTheme.separator)
                                     .frame(height: 4)
                             }
                         )
@@ -429,31 +444,52 @@ struct OnboardingView: View {
             continueButton(
                 title: "Go to Dashboard",
                 isEnabled: isStepValid(),
-                action: handleComplete
+                action: handleVerifyCode
             )
+            
+            statusMessageView
         }
     }
     
     private func continueButton(title: String, isEnabled: Bool, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
+        let isButtonEnabled = isEnabled && !isLoading
+        return Button(action: action) {
             Text(title)
                 .font(.system(size: 18, weight: .black, design: .rounded))
-                .foregroundColor(.white)
+                .foregroundColor(.primary)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 24)
                 .background(
                     RoundedRectangle(cornerRadius: 32)
-                        .fill(isEnabled ? Color.primary : Color.gray.opacity(0.3))
+                        .fill(isButtonEnabled ? OnboardingTheme.accent : OnboardingTheme.tertiaryBackground)
                 )
                 .shadow(
-                    color: isEnabled ? Color.primary.opacity(0.5) : Color.clear,
+                    color: isButtonEnabled ? OnboardingTheme.shadow : Color.clear,
                     radius: 20,
                     x: 0,
                     y: 10
                 )
         }
         .buttonStyle(ScaleButtonStyle())
-        .disabled(!isEnabled)
+        .disabled(!isButtonEnabled)
+    }
+
+    @ViewBuilder
+    private var statusMessageView: some View {
+        if let errorMessage = errorMessage {
+            Text(errorMessage)
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .padding(.top, 12)
+        } else if isLoading {
+            Text("Loading…")
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundColor(.secondary)
+                .padding(.top, 12)
+        } else {
+            EmptyView()
+        }
     }
     
     // MARK: - Validation
@@ -511,12 +547,92 @@ struct OnboardingView: View {
                 step += 1
             }
         }
+        errorMessage = nil
     }
     
     private func prevStep() {
         withAnimation(.easeInOut(duration: 0.3)) {
             step = max(0, step - 1)
         }
+        errorMessage = nil
+    }
+
+    private func handleSendCode() {
+        guard !isLoading, let role = role else { return }
+        errorMessage = nil
+        isLoading = true
+
+        Task {
+            do {
+                let request = StartLoginRequest(
+                    userType: role.rawValue,
+                    name: profile.parentName,
+                    childName: role == .parent ? profile.name : nil,
+                    phone: phone
+                )
+                _ = try await APIClient.shared.post("/api/auth/start-login", body: request) as StartLoginResponse
+
+                await MainActor.run {
+                    isLoading = false
+                    nextStep()
+                }
+            } catch {
+                await MainActor.run {
+                    isLoading = false
+                    errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
+
+    private func handleVerifyCode() {
+        guard !isLoading else { return }
+        errorMessage = nil
+        isLoading = true
+
+        Task {
+            do {
+                let request = VerifyCodeRequest(phone: phone, code: enteredCode)
+                let response: VerifyCodeResponse = try await APIClient.shared.post("/api/auth/verify-code", body: request)
+                try KeychainTokenStore.shared.saveToken(response.token)
+
+                let finalProfile = mapUserToProfile(response.user)
+
+                await MainActor.run {
+                    isLoading = false
+                    onComplete(finalProfile)
+                }
+            } catch {
+                await MainActor.run {
+                    isLoading = false
+                    errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
+
+    private func mapUserToProfile(_ user: APIUser) -> ChildProfile {
+        let resolvedRoleRaw = user.userType ?? user.role ?? role?.rawValue ?? UserRole.parent.rawValue
+        let resolvedRole = UserRole(rawValue: resolvedRoleRaw) ?? .parent
+        let parentName = user.name ?? profile.parentName
+        let childName = user.childName ?? profile.name
+        let tier = SubscriptionTier(rawValue: user.subscriptionTier ?? "free") ?? .free
+        let points = user.points ?? (resolvedRole == .parent ? 100 : 0)
+
+        return ChildProfile(
+            name: childName.isEmpty ? parentName : childName,
+            parentName: parentName,
+            role: resolvedRole,
+            points: points,
+            subscriptionTier: tier,
+            email: user.email,
+            diagnosis: user.diagnosis,
+            severity: user.severity,
+            currentTherapies: user.currentTherapies,
+            goals: user.goals,
+            gender: user.gender,
+            age: user.age
+        )
     }
     
     private func handleComplete() {
