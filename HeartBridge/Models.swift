@@ -14,6 +14,13 @@ struct StartLoginRequest: Codable {
     let name: String
     let childName: String?
     let phone: String
+
+    enum CodingKeys: String, CodingKey {
+        case userType = "user_type"
+        case name
+        case childName = "child_name"
+        case phone
+    }
 }
 
 struct VerifyCodeRequest: Codable {
@@ -47,7 +54,7 @@ struct LoginResponse: Codable {
 // MARK: - API Models
 
 struct APIUser: Codable {
-    let id: String?
+    let id: Int?
     let name: String?
     let userType: String?
     let role: String?
@@ -62,10 +69,32 @@ struct APIUser: Codable {
     let goals: [String]?
     let gender: String?
     let age: String?
+    let createdAt: String?
+    let updatedAt: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case phone
+        case userType = "user_type"
+        case role
+        case childName = "child_name"
+        case subscriptionTier = "subscription_tier"
+        case points
+        case email
+        case diagnosis
+        case severity
+        case currentTherapies = "current_therapies"
+        case goals
+        case gender
+        case age
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+    }
 }
 
 struct ProfileResponse: Codable {
-    let user: APIUser
+    let user: APIUser?
 }
 
 struct VideosResponse: Codable {
@@ -73,11 +102,19 @@ struct VideosResponse: Codable {
 }
 
 struct VideoItem: Codable {
-    let id: String?
+    let id: Int?
     let title: String?
     let url: String?
     let thumbnailUrl: String?
     let createdAt: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case title
+        case url
+        case thumbnailUrl = "thumbnail_url"
+        case createdAt = "created_at"
+    }
 }
 
 // MARK: - Error Response

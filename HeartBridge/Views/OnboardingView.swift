@@ -565,7 +565,7 @@ struct OnboardingView: View {
         Task {
             do {
                 let request = StartLoginRequest(
-                    userType: role.rawValue,
+                    userType: role == .expert ? "therapist" : role.rawValue,
                     name: profile.parentName,
                     childName: role == .parent ? profile.name : nil,
                     phone: phone
@@ -577,9 +577,14 @@ struct OnboardingView: View {
                     nextStep()
                 }
             } catch {
+                let message = error.localizedDescription
+                if message.lowercased().contains("already registered") || message.lowercased().contains("login") {
+                    await handleExistingLogin()
+                    return
+                }
                 await MainActor.run {
                     isLoading = false
-                    errorMessage = error.localizedDescription
+                    errorMessage = message
                 }
             }
         }
@@ -611,9 +616,29 @@ struct OnboardingView: View {
         }
     }
 
+    private func handleExistingLogin() async {
+        do {
+            let request = LoginRequest(phone: phone)
+            let response: LoginResponse = try await APIClient.shared.post("/api/auth/login", body: request)
+            try KeychainTokenStore.shared.saveToken(response.token)
+
+            let finalProfile = mapUserToProfile(response.user)
+
+            await MainActor.run {
+                isLoading = false
+                onComplete(finalProfile)
+            }
+        } catch {
+            await MainActor.run {
+                isLoading = false
+                errorMessage = error.localizedDescription
+            }
+        }
+    }
+
     private func mapUserToProfile(_ user: APIUser) -> ChildProfile {
         let resolvedRoleRaw = user.userType ?? user.role ?? role?.rawValue ?? UserRole.parent.rawValue
-        let resolvedRole = UserRole(rawValue: resolvedRoleRaw) ?? .parent
+        let resolvedRole = (resolvedRoleRaw == "therapist") ? .expert : (UserRole(rawValue: resolvedRoleRaw) ?? .parent)
         let parentName = user.name ?? profile.parentName
         let childName = user.childName ?? profile.name
         let tier = SubscriptionTier(rawValue: user.subscriptionTier ?? "free") ?? .free

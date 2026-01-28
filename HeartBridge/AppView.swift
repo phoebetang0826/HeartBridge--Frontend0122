@@ -27,7 +27,12 @@ struct AppView: View {
             }
         }
         .onAppear {
-            loadSavedProfile()
+            Task {
+                await loadRemoteProfileIfAvailable()
+                if childProfile == nil {
+                    loadSavedProfile()
+                }
+            }
         }
     }
     
@@ -271,6 +276,23 @@ struct AppView: View {
             activeTab = profile.role == .expert ? .sessions : .predictive
         }
     }
+
+    @MainActor
+    private func loadRemoteProfileIfAvailable() async {
+        guard KeychainTokenStore.shared.getToken() != nil else { return }
+        do {
+            let response: ProfileResponse = try await APIClient.shared.get("/api/profile")
+            if let user = response.user {
+                let profile = mapUserToProfile(user)
+                childProfile = profile
+                isOnboarded = true
+                saveProfile(profile)
+                activeTab = profile.role == .expert ? .sessions : .predictive
+            }
+        } catch {
+            // Fallback to local profile if available.
+        }
+    }
     
     private func handleOnboardingComplete(_ profile: ChildProfile) {
         let enriched = ChildProfile(
@@ -313,6 +335,30 @@ struct AppView: View {
         if let data = try? JSONEncoder().encode(profile) {
             UserDefaults.standard.set(data, forKey: profileKey)
         }
+    }
+
+    private func mapUserToProfile(_ user: APIUser) -> ChildProfile {
+        let resolvedRoleRaw = user.userType ?? user.role ?? UserRole.parent.rawValue
+        let resolvedRole = (resolvedRoleRaw == "therapist") ? .expert : (UserRole(rawValue: resolvedRoleRaw) ?? .parent)
+        let parentName = user.name ?? "User"
+        let childName = user.childName ?? ""
+        let tier = SubscriptionTier(rawValue: user.subscriptionTier ?? "free") ?? .free
+        let points = user.points ?? (resolvedRole == .parent ? 100 : 0)
+
+        return ChildProfile(
+            name: childName.isEmpty ? parentName : childName,
+            parentName: parentName,
+            role: resolvedRole,
+            points: points,
+            subscriptionTier: tier,
+            email: user.email,
+            diagnosis: user.diagnosis,
+            severity: user.severity,
+            currentTherapies: user.currentTherapies,
+            goals: user.goals,
+            gender: user.gender,
+            age: user.age
+        )
     }
 }
 
